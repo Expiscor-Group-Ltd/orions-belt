@@ -1,0 +1,23 @@
+{# SPDX-License-Identifier: MIT
+# Copyright (c) 2024 Marko Sarunac
+#
+# Part of the Orion's Belt project.
+# Repository: https://github.com/Expiscor-Group-Ltd/orions-belt
+# Template ID: OB-002-T
+
+# AIDE check service for filesystem integrity monitoring
+# This template is used by OB-002 (filesystem_integrity.yml) #}
+
+[Unit]
+Description=AIDE filesystem integrity check
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/aidecheck.sh
+User=root
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target 

@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2024 Marko Sarunac
+#
+# Part of the Orion's Belt project.
+# Repository: https://github.com/Expiscor-Group-Ltd/orions-belt
+# Script ID: OB-014
+
+- name: Define minimal allowed services
+  set_fact:
+    minimal_allowed_services:
+      - ssh
+      - dns
+      - ntp
+
+- name: Define minimal allowed ports
+  set_fact:
+    minimal_allowed_ports:
+      - 22    # SSH
+      - 53    # DNS
+      - 123   # NTP
+
+- name: Display minimal configuration
+  debug:
+    msg: |
+      === MINIMAL FIREWALL CONFIGURATION ===
+      Minimal services to allow: {{ minimal_allowed_services | join(', ') }}
+      Minimal ports to allow: {{ minimal_allowed_ports | join(', ') }}
+      
+      This configuration provides maximum security by only allowing:
+      - SSH (port 22) - Always allowed from local subnet
+      - DNS (port 53) - For name resolution
+      - NTP (port 123) - For time synchronization
+      
+      WARNING: This will block all other services including web servers,
+      databases, and other applications. Only use this if you're sure
+      no other services are needed.
+
+- name: Prompt for confirmation of minimal configuration
+  pause:
+    prompt: |
+      === MINIMAL FIREWALL CONFIRMATION ===
+      
+      WARNING: This configuration will block ALL services except:
+      - SSH (port 22) - From local subnet only
+      - DNS (port 53) - For name resolution
+      - NTP (port 123) - For time synchronization
+      
+      This will likely break web servers, databases, and other applications.
+      
+      Are you sure you want to proceed with minimal configuration? (y/n):
+  register: minimal_confirmation
+
+- name: Configure firewall with minimal settings
+  include_tasks: configure_firewall_tasks.yml
+  vars:
+    allowed_services: "{{ minimal_allowed_services }}"
+    allowed_ports: "{{ minimal_allowed_ports }}"
+  when: minimal_confirmation.user_input | lower == 'y' 

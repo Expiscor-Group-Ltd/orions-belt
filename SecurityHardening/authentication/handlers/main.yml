@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2024 Marko Sarunac
+#
+# Part of the Orion's Belt project.
+# Repository: https://github.com/Expiscor-Group-Ltd/orions-belt
+# Handler ID: OB-006-H
+
+# PAM configuration handlers
+# This handler file is used by OB-006 (configure_pam.yml)
+
+---
+- name: restart ssh
+  systemd:
+    name: ssh
+    state: restarted
+  when: ansible_os_family == "Debian"
+
+- name: reload pam
+  shell: pam_tally2 --user root --reset
+  when: ansible_os_family == "Debian"
+  ignore_errors: yes
+
+- name: restart login
+  systemd:
+    name: getty@tty1
+    state: restarted
+  when: ansible_os_family == "Debian"
+  ignore_errors: yes 

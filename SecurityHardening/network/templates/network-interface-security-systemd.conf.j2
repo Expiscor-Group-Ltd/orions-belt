@@ -1,0 +1,88 @@
+{# SPDX-License-Identifier: MIT
+# Copyright (c) 2024 Marko Sarunac
+#
+# Part of the Orion's Belt project.
+# Repository: https://github.com/Expiscor-Group-Ltd/orions-belt
+# Template ID: OB-007-T
+
+# Network interface security configuration template (systemd)
+# This template is used by OB-007 (configure_network_security.yml) #}
+
+[Match]
+Name=!lo
+
+[Network]
+# Apply security settings to all network interfaces except loopback
+
+[Link]
+# Disable promiscuous mode
+PromiscuousMode=no
+
+# Enable multicast filtering
+Multicast=no
+
+# Disable all-multicast mode
+AllMulticast=no
+
+# Enable unicast filtering
+Unicast=yes
+
+# Disable broadcast
+Broadcast=no
+
+# Enable point-to-point mode
+PointToPoint=no
+
+# Disable dynamic addressing
+DynamicAddressing=no
+
+# Enable static addressing only
+StaticAddressing=yes
+
+# Disable automatic configuration
+AutoConfigure=no
+
+# Enable manual configuration only
+ManualConfiguration=yes
+
+# Disable IPv6 autoconfiguration
+IPv6AcceptRA=no
+
+# Disable IPv6 router advertisements
+IPv6AcceptRouterAdvertisements=no
+
+# Disable IPv6 autoconfiguration
+IPv6AutoConf=no
+
+# Disable IPv6 privacy extensions
+IPv6PrivacyExtensions=no
+
+# Disable IPv6 temporary addresses
+IPv6TemporaryAddresses=no
+
+# Disable IPv6 optimistic DAD
+IPv6OptimisticDAD=no
+
+# Disable IPv6 duplicate address detection
+IPv6DuplicateAddressDetection=no
+
+# Disable IPv6 address generation
+IPv6AddressGeneration=no
+
+# Disable IPv6 stable privacy
+IPv6StablePrivacy=no
+
+# Disable IPv6 temporary addresses
+IPv6TemporaryAddresses=no
+
+# Disable IPv6 optimistic DAD
+IPv6OptimisticDAD=no
+
+# Disable IPv6 duplicate address detection
+IPv6DuplicateAddressDetection=no
+
+# Disable IPv6 address generation
+IPv6AddressGeneration=no
+
+# Disable IPv6 stable privacy
+IPv6StablePrivacy=no 

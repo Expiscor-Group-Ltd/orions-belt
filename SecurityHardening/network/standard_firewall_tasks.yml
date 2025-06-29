@@ -1,0 +1,108 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2024 Marko Sarunac
+#
+# Part of the Orion's Belt project.
+# Repository: https://github.com/Expiscor-Group-Ltd/orions-belt
+# Script ID: OB-016
+
+- name: Define standard allowed services
+  set_fact:
+    standard_allowed_services:
+      - ssh
+      - http
+      - https
+      - dns
+      - ntp
+      - smtp
+      - imap
+      - pop3
+      - sftp
+      - mysql
+      - postgresql
+      - redis
+      - mongodb
+      - elasticsearch
+      - kibana
+      - prometheus
+      - grafana
+      - jenkins
+      - docker
+      - kubernetes
+
+- name: Define standard allowed ports
+  set_fact:
+    standard_allowed_ports:
+      - 22    # SSH
+      - 80    # HTTP
+      - 443   # HTTPS
+      - 53    # DNS
+      - 123   # NTP
+      - 25    # SMTP
+      - 587   # SMTP (submission)
+      - 465   # SMTP (SMTPS)
+      - 143   # IMAP
+      - 993   # IMAP (SSL)
+      - 110   # POP3
+      - 995   # POP3 (SSL)
+      - 115   # SFTP
+      - 3306  # MySQL
+      - 5432  # PostgreSQL
+      - 6379  # Redis
+      - 27017 # MongoDB
+      - 9200  # Elasticsearch
+      - 5601  # Kibana
+      - 9090  # Prometheus
+      - 3000  # Grafana
+      - 8080  # Jenkins
+      - 2375  # Docker
+      - 2376  # Docker (TLS)
+      - 6443  # Kubernetes API
+      - 10250 # Kubernetes kubelet
+      - 10255 # Kubernetes kubelet (read-only)
+
+- name: Check which standard services are actually running
+  shell: |
+    for port in {{ standard_allowed_ports | join(' ') }}; do
+      if ss -tlnp | grep -q ":$port "; then
+        echo "$port"
+      fi
+    done
+  register: running_standard_ports
+  changed_when: false
+
+- name: Display standard configuration
+  debug:
+    msg: |
+      === STANDARD FIREWALL CONFIGURATION ===
+      Standard services to allow: {{ standard_allowed_services | join(', ') }}
+      Standard ports to allow: {{ standard_allowed_ports | join(', ') }}
+      
+      Currently running standard services:
+      {% for port in running_standard_ports.stdout_lines %}
+      - Port {{ port }}
+      {% endfor %}
+
+- name: Prompt for confirmation of standard configuration
+  pause:
+    prompt: |
+      === STANDARD FIREWALL CONFIRMATION ===
+      
+      The following standard services will be allowed:
+      - SSH (port 22) - Always allowed from local subnet
+      - Web services (ports 80, 443)
+      - Database services (MySQL, PostgreSQL, Redis, MongoDB)
+      - Mail services (SMTP, IMAP, POP3)
+      - Monitoring services (Prometheus, Grafana)
+      - Development services (Jenkins, Docker, Kubernetes)
+      
+      This configuration is suitable for most server environments.
+      
+      Proceed with standard configuration? (y/n):
+  register: standard_confirmation
+
+- name: Configure firewall with standard settings
+  include_tasks: configure_firewall_tasks.yml
+  vars:
+    allowed_services: "{{ standard_allowed_services }}"
+    allowed_ports: "{{ standard_allowed_ports }}"
+  when: standard_confirmation.user_input | lower == 'y' 

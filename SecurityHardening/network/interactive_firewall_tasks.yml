@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2024 Marko Sarunac
+#
+# Part of the Orion's Belt project.
+# Repository: https://github.com/Expiscor-Group-Ltd/orions-belt
+# Script ID: OB-013
+
+- name: Display detected services for user selection
+  debug:
+    msg: |
+      === SELECT SERVICES TO ALLOW ===
+      The following services were detected on your system:
+      
+      {% for line in port_service_mapping.stdout_lines %}
+      {{ loop.index }}. {{ line }}
+      {% endfor %}
+      
+      You will be prompted for each service. Answer 'y' to allow, 'n' to block.
+
+- name: Initialize allowed services list
+  set_fact:
+    user_allowed_services: []
+    user_allowed_ports: []
+
+- name: Prompt user for each detected service
+  pause:
+    prompt: |
+      Allow {{ item.split(':')[1] }} (port {{ item.split(':')[0] }})? (y/n):
+  register: service_choice
+  loop: "{{ port_service_mapping.stdout_lines }}"
+  when: item.split(':')[0] not in always_allowed_ports
+
+- name: Process user choices for services
+  set_fact:
+    user_allowed_services: "{{ user_allowed_services + [item.item.split(':')[1]] }}"
+    user_allowed_ports: "{{ user_allowed_ports + [item.item.split(':')[0]] }}"
+  when: 
+    - item.item.split(':')[0] not in always_allowed_ports
+    - item.user_input | lower == 'y'
+  loop: "{{ service_choice.results | default([]) }}"
+
+- name: Add always allowed services and ports
+  set_fact:
+    final_allowed_services: "{{ always_allowed_services + user_allowed_services | unique }}"
+    final_allowed_ports: "{{ always_allowed_ports + user_allowed_ports | unique }}"
+
+- name: Display final configuration
+  debug:
+    msg: |
+      === FINAL FIREWALL CONFIGURATION ===
+      Services to allow: {{ final_allowed_services | join(', ') }}
+      Ports to allow: {{ final_allowed_ports | join(', ') }}
+
+- name: Configure firewall with user selections
+  include_tasks: configure_firewall_tasks.yml
+  vars:
+    allowed_services: "{{ final_allowed_services }}"
+    allowed_ports: "{{ final_allowed_ports }}" 
